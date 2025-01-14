@@ -586,7 +586,7 @@ function getDel($url, $type)
     $url = urldecode(trim($url));
 
     if ($type == 'url') {
-        $url = $_SERVER['DOCUMENT_ROOT'] . $url;
+        $url = APP_ROOT . $url;
     }
     if ($type == 'hash') {
         $url = APP_ROOT . $url;
@@ -596,39 +596,13 @@ function getDel($url, $type)
     if (is_file($url) && strrpos($url, $config['path'])) {
         // 执行删除
         if (@unlink($url)) {
-            echo '
-			<script>
-            new $.zui.Messager("删除成功", {
-                type: "success", // 定义颜色主题 
-                icon: "ok-sign" // 定义消息图标
-            }).show();
-			// 延时5s跳转			
-            // window.setTimeout("window.location=\'/../ \'",5000);
-            </script>
-			';
+            return TRUE;
         } else {
-            echo '
-			<script>
-            new $.zui.Messager("删除失败", {
-                type: "black", // 定义颜色主题 
-                icon: "exclamation-sign" // 定义消息图标
-            }).show();
-            </script>
-			';
+            return FALSE;
         }
-    } else {
-        echo '
-		<script>
-		new $.zui.Messager("文件不存在", {
-            type: "danger", // 定义颜色主题 
-            icon: "question-sign" // 定义消息图标
-		}).show();
-		</script>
-		';
     }
-    // 清除查询
-    clearstatcache();
 }
+
 
 /**
  * 删除指定文件
@@ -643,7 +617,7 @@ function easyimage_delete($url, $type)
     $url = urldecode(trim($url));
 
     if ($type == 'url') {
-        $url = $_SERVER['DOCUMENT_ROOT'] . $url;
+        $url = APP_ROOT . $url;
     }
     if ($type == 'hash') {
         $url = APP_ROOT . $url;
@@ -1062,10 +1036,11 @@ function creat_thumbnail_by_list($imgUrl)
     global $config;
     ini_set('max_execution_time', '300'); // 脚本运行的时间（以秒为单位）0不限制
 
+    $extension = pathinfo($imgUrl, PATHINFO_EXTENSION);
     // 过滤非指定格式
-    if (!in_array(pathinfo($imgUrl, PATHINFO_EXTENSION), array('png', 'gif', 'jpeg', 'jpg', 'webp', 'bmp'))) {
-        // ico格式直接返回直链
-        if (pathinfo($imgUrl, PATHINFO_EXTENSION) === 'ico') return $imgUrl;
+    if (!in_array($extension, array('png', 'gif', 'jpeg', 'jpg', 'webp', 'bmp'))) {
+        // ico和svg格式直接返回直链
+        if ($extension === 'ico' || $extension === 'svg') return $imgUrl;
         // 其他格式直接返回指定图标
         return '../public/images/file.svg';
     }
@@ -1544,7 +1519,7 @@ function write_upload_logs($filePath, $sourceName, $absolutePath, $fileSize, $fr
 
     // $name = trim(basename($filePath), " \t\n\r\0\x0B"); // 当前图片名称
     $log = array(basename($filePath) => array(             // 以上传图片名称为Array
-        'source'     => htmlspecialchars($sourceName),                       // 原始文件名称
+        'source'     => htmlspecialchars($sourceName),     // 原始文件名称
         'date'       => date('Y-m-d H:i:s'),               // 上传日期
         'ip'         => real_ip(),                         // 上传IP
         'port'       => $_SERVER['REMOTE_PORT'],           // IP端口
